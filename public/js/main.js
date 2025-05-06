@@ -6,10 +6,9 @@
 // Global variables
 let socket;
 let isConnected = false;
-let messageInput;
-let sendButton;
 let connectButton;
-let messagesContainer;
+let audioUnlockButton;
+let connectionStatusElement;
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
@@ -22,21 +21,99 @@ let audioStream = null;
 // DOM elements
 document.addEventListener('DOMContentLoaded', () => {
     // Get DOM elements
-    messageInput = document.getElementById('message-input');
-    sendButton = document.getElementById('send-btn');
     connectButton = document.getElementById('connect-btn');
-    messagesContainer = document.getElementById('messages');
+    audioUnlockButton = document.getElementById('audio-unlock-btn');
+    testMessageButton = document.getElementById('test-message-btn');
+    connectionStatusElement = document.getElementById('connection-status');
 
     // Add event listeners
     connectButton.addEventListener('click', toggleConnection);
-    sendButton.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-
-    // Initialize UI
+    audioUnlockButton.addEventListener('click', unlockAudio);
+    testMessageButton.addEventListener('click', sendTestMessage);
+    
+    // Initialize UI state
     updateUIState();
+
+    // Auto-connect when page loads
+    setTimeout(() => {
+        connectToServer();
+        
+        // Send a test message after connection is established
+        setTimeout(() => {
+            if (isConnected && socket && socket.readyState === WebSocket.OPEN) {
+                console.log('Sending test message to trigger audio response...');
+                
+                // Create a test message
+                const testMessage = {
+                    type: 'text',
+                    text: 'Tell me about Antarctica'
+                };
+                
+                // Log the message
+                console.log('Test message:', JSON.stringify(testMessage));
+                
+                // Send the message
+                socket.send(JSON.stringify(testMessage));
+                
+                // Log that the message was sent
+                console.log('Test message sent successfully');
+                
+                // Add a debug message to check if audio is working
+                const testAudio = new Audio();
+                testAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                testAudio.volume = 1.0;
+                
+                testAudio.oncanplay = () => {
+                    console.log('Test audio can play');
+                    testAudio.play()
+                        .then(() => {
+                            console.log('Test audio playback started');
+                        })
+                        .catch(error => {
+                            console.error('Test audio playback failed:', error);
+                        });
+                };
+                
+                testAudio.onerror = (error) => {
+                    console.error('Test audio error:', error);
+                };
+            } else {
+                console.warn('Cannot send test message: WebSocket not connected');
+                if (!isConnected) {
+                    console.warn('Reason: Not connected (isConnected is false)');
+                }
+                if (!socket) {
+                    console.warn('Reason: Socket is null or undefined');
+                } else if (socket.readyState !== WebSocket.OPEN) {
+                    console.warn('Reason: Socket state is not OPEN, current state:', 
+                        socket.readyState === WebSocket.CONNECTING ? 'CONNECTING' :
+                        socket.readyState === WebSocket.CLOSING ? 'CLOSING' :
+                        socket.readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN'
+                    );
+                }
+            }
+        }, 3000); // Wait 3 seconds after connection attempt
+    }, 1000);
 });
+
+/**
+ * Unlock audio playback on browsers that require user interaction
+ */
+function unlockAudio() {
+    console.log('Attempting to unlock audio playback...');
+    
+    // Create a silent audio element
+    const silentAudio = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
+    
+    // Play the silent audio
+    silentAudio.play()
+        .then(() => {
+            console.log('Audio playback unlocked successfully');
+        })
+        .catch(error => {
+            console.error('Failed to unlock audio playback:', error);
+        });
+}
 
 /**
  * Toggle WebSocket connection
@@ -144,37 +221,6 @@ function disconnectFromServer() {
     updateUIState();
 }
 
-/**
- * Send message to server
- */
-function sendMessage() {
-    if (!isConnected || !messageInput.value.trim()) return;
-
-    const message = messageInput.value.trim();
-    
-    // Send message to server as JSON
-    socket.send(JSON.stringify({
-        type: 'text',
-        text: message
-    }));
-    
-    // Add message to UI
-    addUserMessage(message);
-    
-    // Clear input
-    messageInput.value = '';
-}
-
-/**
- * Add user message to conversation
- */
-function addUserMessage(text) {
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message user-message';
-    messageElement.textContent = text;
-    messagesContainer.appendChild(messageElement);
-    scrollToBottom();
-}
 
 /**
  * Handle messages from the server
@@ -189,34 +235,36 @@ function handleServerMessage(data) {
         // Handle different message types
         switch (message.type) {
             case 'text':
-                addAntarcticaMessage(message.text);
+                console.log('Text message from Antarctica:', message.text);
                 break;
             case 'system':
-                addSystemMessage(message.message);
+                console.log('System message:', message.message);
                 break;
             case 'error':
-                addErrorMessage(message.message);
+                console.error('Error message:', message.message);
                 break;
             case 'audio':
                 // Handle audio message
+                console.log('Received audio message, playing audio...');
                 if (message.audio) {
                     playAudio(message.audio, message.duration || 2.5);
                 }
                 break;
             case 'recognition':
                 // Handle speech recognition result
-                addUserMessage(message.text);
+                console.log('Speech recognized:', message.text);
                 break;
             case 'user_message':
                 // Handle user message from EVI
-                addUserMessage(message.text);
+                console.log('User message:', message.text);
                 break;
             case 'assistant_message':
                 // Handle assistant message from EVI
-                addAntarcticaMessage(message.text);
+                console.log('Antarctica message:', message.text);
                 break;
             case 'audio_output':
                 // Handle audio output from EVI
+                console.log('Received audio output, playing audio...');
                 if (message.data) {
                     playAudio(message.data, message.duration || 2.5);
                 }
@@ -230,64 +278,51 @@ function handleServerMessage(data) {
         }
     } catch (error) {
         console.error('Error handling server message:', error);
-        addSystemMessage('Error displaying message from Antarctica');
     }
 }
 
 /**
- * Add Antarctica message to conversation
- */
-function addAntarcticaMessage(text) {
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message antarctica-message';
-    messageElement.textContent = text;
-    messagesContainer.appendChild(messageElement);
-    scrollToBottom();
-}
-
-/**
- * Add error message to conversation
- */
-function addErrorMessage(text) {
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message error-message';
-    messageElement.textContent = text;
-    messagesContainer.appendChild(messageElement);
-    scrollToBottom();
-}
-
-/**
- * Add system message to conversation
+ * Add system message to console
  */
 function addSystemMessage(text) {
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message system-message';
-    messageElement.textContent = text;
-    messagesContainer.appendChild(messageElement);
-    scrollToBottom();
-}
-
-/**
- * Scroll messages container to bottom
- */
-function scrollToBottom() {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    console.log('System message:', text);
 }
 
 /**
  * Update UI based on connection state
  */
 function updateUIState() {
+    // Update connect button
     if (isConnected) {
         connectButton.textContent = 'Disconnect';
-        messageInput.disabled = false;
-        sendButton.disabled = false;
     } else {
         connectButton.textContent = 'Connect';
-        messageInput.disabled = true;
-        sendButton.disabled = true;
     }
     connectButton.disabled = false;
+    
+    // Update connection status indicator
+    if (connectionStatusElement) {
+        if (isConnected) {
+            connectionStatusElement.textContent = 'Connected';
+            connectionStatusElement.style.backgroundColor = '#4CAF50'; // Green
+        } else {
+            connectionStatusElement.textContent = 'Disconnected';
+            connectionStatusElement.style.backgroundColor = '#f44336'; // Red
+        }
+    }
+    
+    // Log connection state
+    console.log('Connection state updated:', isConnected ? 'Connected' : 'Disconnected');
+    
+    // Check socket state if it exists
+    if (socket) {
+        console.log('WebSocket state:', 
+            socket.readyState === WebSocket.CONNECTING ? 'CONNECTING' :
+            socket.readyState === WebSocket.OPEN ? 'OPEN' :
+            socket.readyState === WebSocket.CLOSING ? 'CLOSING' :
+            socket.readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN'
+        );
+    }
 }
 
 /**
@@ -427,13 +462,19 @@ function convertBase64ToBlob(base64, mimeType = 'audio/wav') {
  * @param {number} duration - Duration of the audio in seconds
  */
 function playAudio(base64Audio, duration) {
+    console.log('playAudio called with duration:', duration);
+    
     // Add to queue
     const blob = convertBase64ToBlob(base64Audio);
     audioQueue.push(blob);
+    console.log('Added audio to queue. Queue length:', audioQueue.length);
     
     // Start playing if not already playing
     if (!isPlaying) {
+        console.log('Not currently playing, starting playback...');
         playNextAudio();
+    } else {
+        console.log('Already playing audio, added to queue for later playback');
     }
 }
 
@@ -442,10 +483,12 @@ function playAudio(base64Audio, duration) {
  */
 function playNextAudio() {
     if (audioQueue.length === 0) {
+        console.log('Audio queue is empty, stopping playback');
         isPlaying = false;
         return;
     }
     
+    console.log('Playing next audio in queue. Queue length:', audioQueue.length);
     isPlaying = true;
     
     // Get next audio from queue
@@ -453,14 +496,18 @@ function playNextAudio() {
     
     // Create audio URL
     const audioUrl = URL.createObjectURL(blob);
+    console.log('Created audio URL:', audioUrl);
     
     // Create audio element
     currentAudio = new Audio(audioUrl);
     
+    // Set volume to maximum
+    currentAudio.volume = 1.0;
+    
     // Play audio
     currentAudio.play()
         .then(() => {
-            console.log('Playing audio');
+            console.log('Audio playback started successfully');
         })
         .catch(error => {
             console.error('Error playing audio:', error);
@@ -470,6 +517,7 @@ function playNextAudio() {
     
     // When audio ends, play next in queue
     currentAudio.onended = () => {
+        console.log('Audio playback ended');
         URL.revokeObjectURL(audioUrl);
         currentAudio = null;
         isPlaying = false;
@@ -522,4 +570,54 @@ function sendSessionSettings() {
     }));
     
     console.log('Sent session settings for audio format:', format);
+}
+
+/**
+ * Send a test message to the server
+ */
+function sendTestMessage() {
+    if (!isConnected || !socket || socket.readyState !== WebSocket.OPEN) {
+        console.warn('Cannot send test message: WebSocket not connected');
+        alert('Cannot send test message: WebSocket not connected');
+        return;
+    }
+    
+    console.log('Sending manual test message to trigger audio response...');
+    
+    // Create a test message
+    const testMessage = {
+        type: 'text',
+        text: 'Tell me about Antarctica'
+    };
+    
+    // Log the message
+    console.log('Test message:', JSON.stringify(testMessage));
+    
+    // Send the message
+    socket.send(JSON.stringify(testMessage));
+    
+    // Log that the message was sent
+    console.log('Test message sent successfully');
+    
+    // Play a test sound to verify audio is working
+    const testAudio = new Audio();
+    testAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    testAudio.volume = 1.0;
+    
+    testAudio.oncanplay = () => {
+        console.log('Test audio can play');
+        testAudio.play()
+            .then(() => {
+                console.log('Test audio playback started');
+            })
+            .catch(error => {
+                console.error('Test audio playback failed:', error);
+                alert('Test audio playback failed: ' + error.message);
+            });
+    };
+    
+    testAudio.onerror = (error) => {
+        console.error('Test audio error:', error);
+        alert('Test audio error: ' + error);
+    };
 }

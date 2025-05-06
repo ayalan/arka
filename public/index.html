@@ -10,32 +10,23 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Arka</h1>
-            <p>Speak with Antarctica</p>
-        </header>
-        
         <main>
             <div id="visualization-container">
                 <!-- Three.js visualization will be rendered here -->
             </div>
             
-            <div id="conversation-container">
-                <div id="messages" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
-                    <!-- Conversation messages will appear here -->
-                </div>
-                
-                <div id="input-container">
-                    <button id="connect-btn">Connect</button>
-                    <input type="text" id="message-input" placeholder="Ask Antarctica a question..." disabled>
-                    <button id="send-btn" disabled>Send</button>
-                </div>
+            <!-- Controls for WebSocket and audio -->
+            <div id="controls" style="position: absolute; bottom: 20px; right: 20px; z-index: 100;">
+                <button id="connect-btn" style="display: none;">Connect</button>
+                <button id="audio-unlock-btn">Enable Audio</button>
+                <button id="test-message-btn">Send Test Message</button>
+            </div>
+            
+            <!-- Connection status indicator -->
+            <div id="connection-status" style="position: absolute; top: 20px; right: 20px; z-index: 100; padding: 8px 12px; border-radius: 4px; font-weight: bold; background-color: #f44336; color: white;">
+                Disconnected
             </div>
         </main>
-        
-        <footer>
-            <p>Arka: An educational interactive experience that personifies Antarctica through AI</p>
-        </footer>
     </div>
 
     <!-- Scripts -->
