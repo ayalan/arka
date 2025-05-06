@@ -108,8 +108,8 @@ button:disabled {
 footer {
     text-align: center;
     padding: 20px 0;
-    color: #666;
-    font-size: 0.9rem;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.6rem;
 }
 
 /* Message styles */
@@ -164,8 +164,6 @@ footer {
         left: 0;
         right: 0;
         z-index: 10;
-        background-color: rgba(240, 248, 255, 0.7);
-        backdrop-filter: blur(5px);
     }
     
     header {
@@ -180,4 +178,8 @@ footer {
         min-height: 100vh;
         border-radius: 0;
     }
+}
+
+#controls {
+    display: none;
 }
