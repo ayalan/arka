@@ -17,6 +17,9 @@ let audioQueue = [];
 let isPlaying = false;
 let currentAudio = null;
 let audioStream = null;
+let outputAnalyser = null;
+let outputDataArray = null;
+let outputVisualizationActive = false;
 
 // DOM elements
 document.addEventListener('DOMContentLoaded', () => {
@@ -457,6 +460,68 @@ function convertBase64ToBlob(base64, mimeType = 'audio/wav') {
 }
 
 /**
+ * Initialize output audio analyzer
+ */
+function initOutputAudioAnalyzer() {
+    if (!window.audioViz || !window.audioViz.initAudio) {
+        console.error('Audio visualization module not available');
+        return false;
+    }
+    
+    try {
+        // Get the audio context from audio-viz.js
+        const audioContext = window.audioViz.getAudioContext();
+        if (!audioContext) {
+            console.error('Audio context not available');
+            return false;
+        }
+        
+        // Create analyzer node for output audio
+        outputAnalyser = audioContext.createAnalyser();
+        outputAnalyser.fftSize = 256; // Match the FFT size in audio-viz.js
+        outputAnalyser.smoothingTimeConstant = 0.8; // Match the smoothing in audio-viz.js
+        
+        // Create data array for frequency data
+        const bufferLength = outputAnalyser.frequencyBinCount;
+        outputDataArray = new Uint8Array(bufferLength);
+        
+        console.log('Output audio analyzer initialized');
+        return true;
+    } catch (error) {
+        console.error('Failed to initialize output audio analyzer:', error);
+        return false;
+    }
+}
+
+/**
+ * Visualize output audio
+ */
+function visualizeOutputAudio() {
+    if (!outputVisualizationActive || !outputAnalyser || !outputDataArray) return;
+    
+    // Request animation frame
+    requestAnimationFrame(visualizeOutputAudio);
+    
+    // Get frequency data
+    outputAnalyser.getByteFrequencyData(outputDataArray);
+    
+    // Calculate average level
+    let sum = 0;
+    for (let i = 0; i < outputDataArray.length; i++) {
+        sum += outputDataArray[i];
+    }
+    
+    // Normalize level to 0-1 range
+    const average = sum / outputDataArray.length;
+    const level = average / 255;
+    
+    // Update visualization
+    if (window.threeViz && window.threeViz.updateVisualizationRing) {
+        window.threeViz.updateVisualizationRing(level);
+    }
+}
+
+/**
  * Play audio from base64 string
  * @param {string} base64Audio - Base64-encoded audio data
  * @param {number} duration - Duration of the audio in seconds
@@ -504,6 +569,41 @@ function playNextAudio() {
     // Set volume to maximum
     currentAudio.volume = 1.0;
     
+    // Connect to audio analyzer for visualization
+    try {
+        // Initialize output analyzer if not already initialized
+        if (!outputAnalyser) {
+            initOutputAudioAnalyzer();
+        }
+        
+        // Connect audio element to analyzer when it starts playing
+        currentAudio.addEventListener('playing', () => {
+            try {
+                const audioContext = window.audioViz.getAudioContext();
+                if (audioContext && outputAnalyser) {
+                    // Create media element source
+                    const source = audioContext.createMediaElementSource(currentAudio);
+                    
+                    // Connect source to analyzer and then to destination
+                    source.connect(outputAnalyser);
+                    source.connect(audioContext.destination);
+                    
+                    // Start visualization if not already active
+                    if (!outputVisualizationActive) {
+                        outputVisualizationActive = true;
+                        visualizeOutputAudio();
+                    }
+                    
+                    console.log('Connected output audio to analyzer');
+                }
+            } catch (error) {
+                console.error('Error connecting output audio to analyzer:', error);
+            }
+        }, { once: true });
+    } catch (error) {
+        console.error('Error setting up audio analysis:', error);
+    }
+    
     // Play audio
     currentAudio.play()
         .then(() => {
@@ -538,6 +638,14 @@ function stopAudioPlayback() {
     // Clear queue
     audioQueue = [];
     isPlaying = false;
+    
+    // Stop visualization
+    outputVisualizationActive = false;
+    
+    // Update visualization to show no audio
+    if (window.threeViz && window.threeViz.updateVisualizationRing) {
+        window.threeViz.updateVisualizationRing(0);
+    }
     
     console.log('Stopped audio playback');
 }

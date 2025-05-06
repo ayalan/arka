@@ -12,8 +12,8 @@ let animationId;
 
 // Constants
 const ROTATION_SPEED = 0.001;
-const RING_RADIUS = 2.5;
-const RING_TUBE = 0.1;
+const RING_RADIUS = 30; // Increased by 1.5x from original 2.5
+const RING_TUBE = 1;
 const RING_SEGMENTS = 64;
 
 // Initialize Three.js scene
@@ -44,7 +44,7 @@ function initThreeJs() {
     // Create camera
     const aspect = container.clientWidth / container.clientHeight;
     camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
-    camera.position.z = 5;
+    camera.position.z = 50; // Zoomed out 10x from original position of 5
     
     // Create renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -54,22 +54,74 @@ function initThreeJs() {
 }
 
 /**
- * Create a placeholder for the Antarctica model
- * This will be replaced with a more detailed model later
+ * Load the Earth globe model and focus on the south pole
  */
 function createAntarcticaPlaceholder() {
-    // Create a simple geometry as a placeholder
-    const geometry = new THREE.IcosahedronGeometry(1.5, 1);
-    const material = new THREE.MeshPhongMaterial({
-        color: 0xffffff,
-        flatShading: true,
-        transparent: true,
-        opacity: 0.8,
-        shininess: 100
-    });
+    // Create a loading manager with callbacks
+    const loadingManager = new THREE.LoadingManager(
+        // onLoad
+        () => {
+            console.log('All resources loaded successfully');
+        },
+        // onProgress
+        (url, itemsLoaded, itemsTotal) => {
+            console.log(`Loading resource: ${url} (${itemsLoaded}/${itemsTotal})`);
+        },
+        // onError
+        (url) => {
+            console.error(`Error loading resource: ${url}`);
+        }
+    );
     
-    antarctica = new THREE.Mesh(geometry, material);
-    scene.add(antarctica);
+    // Create GLTF loader
+    const gltfLoader = new THREE.GLTFLoader(loadingManager);
+    
+    console.log('Attempting to load GLB model: /earth/source/earth.glb');
+    
+    // Load GLB model
+    gltfLoader.load(
+        '/earth/source/earth.glb',
+        (gltf) => {
+            // Get the model from the GLTF scene
+            const object = gltf.scene;
+            
+            // Set scale for the model
+            object.scale.set(2.5, 2.5, 2.5);
+            
+            // Rotate to show south pole
+            // Rotate 90 degrees around X axis to show the pole
+            object.rotation.x = Math.PI / 2;
+            // Additional rotation to ensure south pole is visible
+            object.rotation.z = Math.PI;
+            
+            // Set as antarctica object
+            antarctica = object;
+            
+            // Add to scene
+            scene.add(antarctica);
+        },
+        (xhr) => {
+            // Loading progress
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        (error) => {
+            // Error handling
+            console.error('An error happened while loading the GLB model:', error);
+            
+            // Fallback to placeholder if loading fails
+            const geometry = new THREE.IcosahedronGeometry(1.5, 1);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                flatShading: true,
+                transparent: true,
+                opacity: 0.8,
+                shininess: 100
+            });
+            
+            antarctica = new THREE.Mesh(geometry, material);
+            scene.add(antarctica);
+        }
+    );
 }
 
 /**
@@ -91,7 +143,7 @@ function createVisualizationRing() {
     });
     
     visualizationRing = new THREE.Mesh(geometry, material);
-    visualizationRing.rotation.x = Math.PI / 2; // Rotate to horizontal
+    //visualizationRing.rotation.x = Math.PI / 2; // Rotate to horizontal
     scene.add(visualizationRing);
 }
 
@@ -120,10 +172,10 @@ function addLighting() {
 function animate() {
     animationId = requestAnimationFrame(animate);
     
-    // Rotate Antarctica slowly
-    if (antarctica) {
-        antarctica.rotation.y += ROTATION_SPEED;
-    }
+    // No longer rotating Antarctica as per requirements
+    // if (antarctica) {
+    //     antarctica.rotation.y += ROTATION_SPEED;
+    // }
     
     // Rotate visualization ring in opposite direction
     if (visualizationRing) {

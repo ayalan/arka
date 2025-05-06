@@ -170,13 +170,26 @@ function cleanupAudio() {
     dataArray = null;
 }
 
+/**
+ * Get the audio context
+ * @returns {AudioContext} The audio context
+ */
+function getAudioContext() {
+    // Initialize audio context if it doesn't exist
+    if (!audioContext) {
+        initAudio();
+    }
+    return audioContext;
+}
+
 // Export functions for use in other modules
 window.audioViz = {
     initAudio,
     processAudioFromMic,
     processAudioFromStream,
     stopAudioProcessing,
-    cleanupAudio
+    cleanupAudio,
+    getAudioContext
 };
 
 // Initialize when document is loaded
