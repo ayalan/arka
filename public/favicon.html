@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Arka Favicon Generator</title>
+</head>
+<body>
+  <h1>Arka Favicon Generator</h1>
+  <canvas id="favicon" width="32" height="32"></canvas>
+  <script>
+    // Get the canvas element
+    const canvas = document.getElementById('favicon');
+    const ctx = canvas.getContext('2d');
+    
+    // Draw a blue circle (Antarctica)
+    ctx.fillStyle = '#0066cc';
+    ctx.beginPath();
+    ctx.arc(16, 16, 14, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw a white circle (ice)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath();
+    ctx.arc(16, 16, 8, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw a blue ring (visualization ring)
+    ctx.strokeStyle = '#00aaff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(16, 16, 12, 4, Math.PI / 6, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Create a link to download the favicon
+    const link = document.createElement('a');
+    link.innerHTML = 'Download Favicon';
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'favicon.png';
+    document.body.appendChild(link);
+  </script>
+</body>
+</html>

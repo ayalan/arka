@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arka: Antarctica Personification Project</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Arka</h1>
+            <p>Speak with Antarctica</p>
+        </header>
+        
+        <main>
+            <div id="visualization-container">
+                <!-- Three.js visualization will be rendered here -->
+            </div>
+            
+            <div id="conversation-container">
+                <div id="messages" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                    <!-- Conversation messages will appear here -->
+                </div>
+                
+                <div id="input-container">
+                    <button id="connect-btn">Connect</button>
+                    <input type="text" id="message-input" placeholder="Ask Antarctica a question..." disabled>
+                    <button id="send-btn" disabled>Send</button>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Arka: An educational interactive experience that personifies Antarctica through AI</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/three-setup.js"></script>
+    <script src="js/audio-viz.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
