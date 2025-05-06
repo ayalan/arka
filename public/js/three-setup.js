@@ -300,9 +300,9 @@ function stopThinkingAnimation() {
 function setRandomRotationTarget() {
     // Generate random offsets from default rotation
     // Keep the offsets small to prevent wild rotations
-    const xOffset = (Math.random() * 0.4 - 0.1); // -0.1 to 0.1 radians
-    const yOffset = (Math.random() * 0.4 - 0.1);
-    const zOffset = (Math.random() * 0.4 - 0.1);
+    const xOffset = (Math.random() * 0.6 - 0.3); // -0.1 to 0.1 radians
+    const yOffset = (Math.random() * 0.6 - 0.3);
+    const zOffset = (Math.random() * 0.6 - 0.3);
     
     // Set new rotation targets based on default rotation plus offset
     rotationTarget.x = defaultRotation.x + xOffset;
