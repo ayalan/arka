@@ -608,6 +608,11 @@ function playNextAudio() {
     currentAudio.play()
         .then(() => {
             console.log('Audio playback started successfully');
+            
+            // Start globe thinking animation if available
+            if (window.threeViz && window.threeViz.startThinkingAnimation) {
+                window.threeViz.startThinkingAnimation();
+            }
         })
         .catch(error => {
             console.error('Error playing audio:', error);
@@ -621,6 +626,12 @@ function playNextAudio() {
         URL.revokeObjectURL(audioUrl);
         currentAudio = null;
         isPlaying = false;
+        
+        // If queue is empty, stop thinking animation
+        if (audioQueue.length === 0 && window.threeViz && window.threeViz.stopThinkingAnimation) {
+            window.threeViz.stopThinkingAnimation();
+        }
+        
         playNextAudio();
     };
 }
@@ -643,8 +654,16 @@ function stopAudioPlayback() {
     outputVisualizationActive = false;
     
     // Update visualization to show no audio
-    if (window.threeViz && window.threeViz.updateVisualizationRing) {
-        window.threeViz.updateVisualizationRing(0);
+    if (window.threeViz) {
+        // Stop ring visualization
+        if (window.threeViz.updateVisualizationRing) {
+            window.threeViz.updateVisualizationRing(0);
+        }
+        
+        // Stop globe thinking animation
+        if (window.threeViz.stopThinkingAnimation) {
+            window.threeViz.stopThinkingAnimation();
+        }
     }
     
     console.log('Stopped audio playback');

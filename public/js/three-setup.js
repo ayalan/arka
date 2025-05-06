@@ -10,11 +10,22 @@ let visualizationRing;
 let container;
 let animationId;
 
+// Globe rotation variables
+let defaultRotation = { x: Math.PI / 2, y: 0, z: Math.PI }; // Default rotation showing south pole
+let isThinking = false; // Flag to track if the globe is in "thinking" mode
+let thinkingTime = 0; // Counter for thinking animation
+let rotationTarget = { x: 0, y: 0, z: 0 }; // Target for smooth rotation
+let rotationVelocity = { x: 0, y: 0, z: 0 }; // Current rotation velocity
+
 // Constants
 const ROTATION_SPEED = 0.001;
 const RING_RADIUS = 30; // Increased by 1.5x from original 2.5
 const RING_TUBE = 1;
 const RING_SEGMENTS = 64;
+const THINKING_ROTATION_SPEED = 0.005; // Speed of random rotation when thinking
+const THINKING_CHANGE_INTERVAL = 1; // How often to change rotation direction (in seconds)
+const ROTATION_DAMPING = 0.95; // Damping factor for smooth rotation
+const RETURN_SPEED = 0.1; // Speed to return to default position
 
 // Initialize Three.js scene
 document.addEventListener('DOMContentLoaded', () => {
@@ -172,10 +183,39 @@ function addLighting() {
 function animate() {
     animationId = requestAnimationFrame(animate);
     
-    // No longer rotating Antarctica as per requirements
-    // if (antarctica) {
-    //     antarctica.rotation.y += ROTATION_SPEED;
-    // }
+    // Handle globe rotation based on thinking state
+    if (antarctica) {
+        if (isThinking) {
+            // Update thinking time counter
+            thinkingTime += 1/60; // Assuming 60fps
+            
+            // Change rotation target periodically
+            if (thinkingTime >= THINKING_CHANGE_INTERVAL) {
+                setRandomRotationTarget();
+                thinkingTime = 0;
+            }
+            
+            // Calculate rotation velocity towards target
+            rotationVelocity.x = (rotationTarget.x - antarctica.rotation.x) * THINKING_ROTATION_SPEED;
+            rotationVelocity.y = (rotationTarget.y - antarctica.rotation.y) * THINKING_ROTATION_SPEED;
+            rotationVelocity.z = (rotationTarget.z - antarctica.rotation.z) * THINKING_ROTATION_SPEED;
+            
+            // Apply damping to rotation velocity
+            rotationVelocity.x *= ROTATION_DAMPING;
+            rotationVelocity.y *= ROTATION_DAMPING;
+            rotationVelocity.z *= ROTATION_DAMPING;
+            
+            // Apply rotation velocity
+            antarctica.rotation.x += rotationVelocity.x;
+            antarctica.rotation.y += rotationVelocity.y;
+            antarctica.rotation.z += rotationVelocity.z;
+        } else {
+            // Return to default position when not thinking
+            antarctica.rotation.x += (defaultRotation.x - antarctica.rotation.x) * RETURN_SPEED;
+            antarctica.rotation.y += (defaultRotation.y - antarctica.rotation.y) * RETURN_SPEED;
+            antarctica.rotation.z += (defaultRotation.z - antarctica.rotation.z) * RETURN_SPEED;
+        }
+    }
     
     // Rotate visualization ring in opposite direction
     if (visualizationRing) {
@@ -218,6 +258,59 @@ function updateVisualizationRing(level) {
 }
 
 /**
+ * Start the "thinking" animation for the globe
+ * This will be called when audio starts playing
+ */
+function startThinkingAnimation() {
+    if (!antarctica) return;
+    
+    // Set thinking flag
+    isThinking = true;
+    
+    // Reset thinking time counter
+    thinkingTime = 0;
+    
+    // Set initial random rotation target
+    setRandomRotationTarget();
+    
+    console.log('Started globe thinking animation');
+}
+
+/**
+ * Stop the "thinking" animation and return to default position
+ * This will be called when audio stops playing
+ */
+function stopThinkingAnimation() {
+    if (!antarctica) return;
+    
+    // Clear thinking flag
+    isThinking = false;
+    
+    // Set rotation target back to default
+    rotationTarget.x = defaultRotation.x;
+    rotationTarget.y = defaultRotation.y;
+    rotationTarget.z = defaultRotation.z;
+    
+    console.log('Stopped globe thinking animation, returning to default position');
+}
+
+/**
+ * Set a random rotation target for the "thinking" animation
+ */
+function setRandomRotationTarget() {
+    // Generate random offsets from default rotation
+    // Keep the offsets small to prevent wild rotations
+    const xOffset = (Math.random() * 0.4 - 0.1); // -0.1 to 0.1 radians
+    const yOffset = (Math.random() * 0.4 - 0.1);
+    const zOffset = (Math.random() * 0.4 - 0.1);
+    
+    // Set new rotation targets based on default rotation plus offset
+    rotationTarget.x = defaultRotation.x + xOffset;
+    rotationTarget.y = defaultRotation.y + yOffset;
+    rotationTarget.z = defaultRotation.z + zOffset;
+}
+
+/**
  * Clean up Three.js resources
  */
 function cleanupThreeJs() {
@@ -243,5 +336,7 @@ function cleanupThreeJs() {
 // Export functions for use in other modules
 window.threeViz = {
     updateVisualizationRing,
-    cleanupThreeJs
+    cleanupThreeJs,
+    startThinkingAnimation,
+    stopThinkingAnimation
 };
