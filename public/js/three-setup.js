@@ -13,6 +13,7 @@ let aurora;
 let auroraVisible = false;
 let auroraOpacity = 0;
 let forceAurora = false; // Configuration from server
+let directionalLight; // Reference to directional light for dynamic updates
 
 // Globe rotation variables
 let defaultRotation = { x: Math.PI / 2, y: 0, z: Math.PI }; // Default rotation showing south pole
@@ -195,8 +196,8 @@ function addLighting() {
     const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
     
-    // Add directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    // Add directional light with initial nighttime settings
+    directionalLight = new THREE.DirectionalLight(0x39aaff, 0.75);
     directionalLight.position.set(5, 3, 5);
     scene.add(directionalLight);
     
@@ -204,6 +205,28 @@ function addLighting() {
     const pointLight = new THREE.PointLight(0x0088ff, 1, 10);
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
+    
+    // Set initial lighting based on current time
+    updateLighting();
+}
+
+/**
+ * Update lighting based on time of day
+ */
+function updateLighting() {
+    if (!directionalLight) return;
+    
+    const nighttime = forceAurora || isNighttime();
+    
+    if (nighttime) {
+        // Nighttime: blue-tinted light with lower intensity
+        directionalLight.color.setHex(0x39aaff);
+        directionalLight.intensity = 0.75;
+    } else {
+        // Daytime: white light with full intensity
+        directionalLight.color.setHex(0xffffff);
+        directionalLight.intensity = 1;
+    }
 }
 
 /**
@@ -369,10 +392,13 @@ function animate() {
         visualizationRing.rotation.z -= ROTATION_SPEED * 0.5;
     }
     
-    // Update aurora animation
+    // Update aurora animation and lighting
     if (aurora && aurora.children) {
         // Handle aurora visibility based on time
         updateAuroraVisibility();
+        
+        // Update lighting based on time
+        updateLighting();
         
         // Smooth opacity transitions
         if (auroraVisible && auroraOpacity < 1) {
