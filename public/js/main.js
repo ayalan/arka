@@ -36,67 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize UI state
     updateUIState();
-
-    // Auto-connect when page loads
-    setTimeout(() => {
-        connectToServer();
-        
-        // Send a test message after connection is established
-        setTimeout(() => {
-            if (isConnected && socket && socket.readyState === WebSocket.OPEN) {
-                console.log('Sending test message to trigger audio response...');
-                
-                // Create a test message
-                const testMessage = {
-                    type: 'text',
-                    text: 'Tell me about Antarctica'
-                };
-                
-                // Log the message
-                console.log('Test message:', JSON.stringify(testMessage));
-                
-                // Send the message
-                socket.send(JSON.stringify(testMessage));
-                
-                // Log that the message was sent
-                console.log('Test message sent successfully');
-                
-                // Add a debug message to check if audio is working
-                const testAudio = new Audio();
-                testAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-                testAudio.volume = 1.0;
-                
-                testAudio.oncanplay = () => {
-                    console.log('Test audio can play');
-                    testAudio.play()
-                        .then(() => {
-                            console.log('Test audio playback started');
-                        })
-                        .catch(error => {
-                            console.error('Test audio playback failed:', error);
-                        });
-                };
-                
-                testAudio.onerror = (error) => {
-                    console.error('Test audio error:', error);
-                };
-            } else {
-                console.warn('Cannot send test message: WebSocket not connected');
-                if (!isConnected) {
-                    console.warn('Reason: Not connected (isConnected is false)');
-                }
-                if (!socket) {
-                    console.warn('Reason: Socket is null or undefined');
-                } else if (socket.readyState !== WebSocket.OPEN) {
-                    console.warn('Reason: Socket state is not OPEN, current state:', 
-                        socket.readyState === WebSocket.CONNECTING ? 'CONNECTING' :
-                        socket.readyState === WebSocket.CLOSING ? 'CLOSING' :
-                        socket.readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN'
-                    );
-                }
-            }
-        }, 3000); // Wait 3 seconds after connection attempt
-    }, 1000);
 });
 
 /**

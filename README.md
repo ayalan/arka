@@ -23,7 +23,7 @@ The application consists of:
 
 ### Frontend Components
 
-- **3D Visualization**: Three.js for rendering a rotating Antarctica model
+- **3D Visualization**: Three.js for rendering a model of earth
 - **Audio Visualization**: Translucent ring that responds to audio levels
 - **User Interface**: Minimal text input and conversation display
 - **Audio Processing**: WebAudio API for analyzing audio levels

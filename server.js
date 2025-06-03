@@ -531,6 +531,13 @@ app.get('/api/status', (req, res) => {
   res.json({ status: 'ok', message: 'Arka server is running' });
 });
 
+// API route to get client configuration
+app.get('/api/config', (req, res) => {
+  res.json({
+    forceAurora: process.env.FORCE_AURORA === 'true'
+  });
+});
+
 // Serve the frontend for all other routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

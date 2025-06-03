@@ -118,7 +118,21 @@ This document tracks the development progress of the Antarctica personification 
   - [ ] Optimize network usage
   - [ ] Improve loading times
 
-## Phase 8: Deployment and Production
+## Phase 8: Environmental Effects
+
+- [x] Implement aurora borealis effect
+  - [x] Create time-based visibility system (6pm-8am)
+  - [x] Design particle-based aurora system
+  - [x] Transform to curtain-style aurora with elongated vertical streaks
+  - [x] Add custom GLSL shaders for realistic movement and shimmer
+  - [x] Implement FORCE_AURORA configuration for testing
+  - [x] Add gentle swaying animation with proper speed tuning
+  - [x] Position curtains at optimal distance from camera
+  - [x] Create authentic aurora color palette (green, blue, purple, cyan, pink)
+- [ ] Add snow effects
+- [ ] Implement weather variations
+
+## Phase 9: Deployment and Production
 
 - [ ] Final configuration of NGINX
 - [ ] Set up SSL certificates (Let's Encrypt)
@@ -131,9 +145,7 @@ This document tracks the development progress of the Antarctica personification 
 ## Future Enhancements
 
 - [ ] Create more detailed Antarctica 3D model
-- [ ] Add environmental effects (snow, aurora)
 - [ ] Implement guided educational tours
-- [ ] Create classroom dashboard for teachers
 - [ ] Add visualization of climate data
 - [ ] Develop complementary characters (Arctic, Amazon Rainforest)
 - [ ] Add multi-language support
@@ -149,5 +161,5 @@ _Note: This section will grow as testing reveals issues_
 
 ---
 
-_Last updated: May 6, 2025_
-_Status: Implementation in Progress - Phase 0 Complete, Phases 2, 4, 5, 6 & 7 Partially Complete_
+_Last updated: June 3, 2025_
+_Status: Implementation in Progress - Phases 0 & 8 Complete, Phases 2, 4, 5, 6 & 7 Partially Complete_
