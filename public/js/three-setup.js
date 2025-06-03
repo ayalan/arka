@@ -198,7 +198,7 @@ function addLighting() {
     
     // Add directional light with initial nighttime settings
     directionalLight = new THREE.DirectionalLight(0x39aaff, 0.75);
-    directionalLight.position.set(5, 3, 5);
+    directionalLight.position.set(1, 5, 5);
     scene.add(directionalLight);
     
     // Add point light inside the model for glow effect

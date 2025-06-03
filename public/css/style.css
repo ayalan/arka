@@ -112,6 +112,12 @@ footer {
     font-size: 0.6rem;
 }
 
+footer a, footer a:visited, footer a:hover, footer a:active {
+    color: rgba(255,255,255,0.2);
+    text-decoration: underline;
+    font-size: 0.6rem;
+}
+
 /* Message styles */
 .message {
     margin-bottom: 15px;
@@ -181,5 +187,5 @@ footer {
 }
 
 #controls {
-    display: none;
+
 }
