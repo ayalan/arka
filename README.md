@@ -19,53 +19,7 @@ The application consists of:
 
 1. **Frontend**: A browser-based interface featuring a 3D model of Antarctica with audio visualization
 2. **Backend**: A Node.js server that securely connects to the Hume EVI API
-3. **Deployment**: DigitalOcean NodeJS 1-Click App for easy hosting
-
-### Frontend Components
-
-- **3D Visualization**: Three.js for rendering a model of earth
-- **Audio Visualization**: Translucent ring that responds to audio levels
-- **User Interface**: Minimal text input and conversation display
-- **Audio Processing**: WebAudio API for analyzing audio levels
-
-### Backend Components
-
-- **Proxy Server**: Node.js with Express for WebSocket proxying
-- **Security Layer**: Keeps Hume API keys secure
-- **WebSocket Handling**: Manages bidirectional communication with Hume EVI
-- **NGINX Configuration**: Serves static files and handles routing
-
-## Development Plan
-
-### Phase 1: Basic Setup (1-2 days)
-- Create DigitalOcean Droplet using NodeJS 1-Click App
-- Set up basic directory structure
-- Configure NGINX as reverse proxy
-- Test server connectivity
-
-### Phase 2: 3D Visualization (2-3 days)
-- Implement Three.js scene with basic Antarctica model
-- Add slow rotation animation
-- Create translucent audio visualization ring
-- Test rendering performance
-
-### Phase 3: Hume API Integration (2-3 days)
-- Set up secure connection to Hume EVI
-- Configure WebSockets for audio streaming
-- Implement system prompt for Antarctica personification
-- Test conversation flow
-
-### Phase 4: Audio Visualization (1-2 days)
-- Implement WebAudio API for analyzing audio levels
-- Connect audio levels to ring opacity
-- Test visualization responsiveness
-- Optimize performance
-
-### Phase 5: UI Refinement & Testing (2-3 days)
-- Add loading states and error handling
-- Improve UI/UX elements
-- Test across different devices
-- Gather feedback and iterate
+3. (Soon) **Deployment**: DigitalOcean NodeJS 1-Click App for easy hosting
 
 ## Deployment Instructions
 
@@ -218,21 +172,6 @@ Remember to maintain a consistent voice as Antarctica throughout all interaction
 - **WebAudio API Guide**: https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API
 - **DigitalOcean NodeJS Guide**: https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-20-04
 - **Hume AI Documentation**: https://dev.hume.ai/docs
-
-## Maintenance
-
-- Regularly update Node.js and npm packages
-- Monitor server performance using DigitalOcean's dashboard
-- Back up your configuration and custom code
-- Keep your Hume API keys secure
-
-## Future Enhancements
-
-- Add more detailed 3D model with ice shelf dynamics
-- Implement educational "guided tours" of different Antarctic regions
-- Create a classroom dashboard for teachers to monitor conversations
-- Add visualization of climate data over time
-- Develop complementary characters (Arctic, Amazon Rainforest, etc.)
 
 ---
 
